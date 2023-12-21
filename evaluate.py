@@ -5,3 +5,6 @@ def delta_size(map,x,y):
 
 def change_age(map,x,y):
     map[x][y].age += 1
+    
+def simulation(map,duration):
+    pass

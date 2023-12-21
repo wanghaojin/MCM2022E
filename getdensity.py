@@ -1,45 +1,43 @@
-from PIL import Image
 import numpy as np
+from PIL import Image
 from scipy.ndimage import generic_filter
 
-# Function to normalize the pixel data
-def normalize_data(data):
-    min_val = np.min(data)
-    max_val = np.max(data)
-    return (data - min_val) / (max_val - min_val)
+def is_white(value, threshold=180):
+    return value > threshold
 
-# Define the function to be applied to each pixel
-def filter_func(values):
-    # Check if the central pixel (13th in the 5x5 grid) is white (value of 0 in our case)
-    if values[12] == 0:
-        # Exclude the central pixel value when calculating the mean
-        surrounding = np.delete(values, 12)
-        # Calculate the mean of the surrounding pixel values
-        mean_val = surrounding[surrounding > 0].mean() if surrounding[surrounding > 0].size > 0 else 0
-        return mean_val
-    else:
-        # If the pixel is not white, return its original value
-        return values[12]
+def apply_blur_filter(image_array, filter_size=9):
+    def filter_func(values,threshold = 180):
+        # 如果中心像素是白色，使用非白色的周围像素的均值
+        if is_white(values[len(values) // 2]):
+            non_white_values = values[values < threshold]
+            return np.mean(non_white_values) if non_white_values.size > 0 else values[len(values) // 2]
+        else:
+            return values[len(values) // 2]
+    
+    return generic_filter(image_array, filter_func, size=(filter_size, filter_size))
 
-# Open the image and convert it to a numpy array
-image_path = 'map.jpg'
-with Image.open(image_path) as img:
-    img_array = np.array(img)
+# 读取图像并转换为灰度数组
+with Image.open('map.jpg') as img:
+    img_array = np.array(img.convert('L'))
 
-# Assuming the green channel represents tree density,
-# extract the green channel
-green_channel = img_array[:, :, 1]
+# 应用模糊过滤器，尝试不同的filter_size和迭代次数以充分模糊文字
+filter_size = 25  # 增加过滤器尺寸以覆盖更大的文字
+iterations = 200   # 可能不需要200次迭代
 
-# Apply the filter to the green channel of the image
-# Using 'mirror' mode to handle the borders of the image
-filtered_green_channel = generic_filter(green_channel, filter_func, size=(5,5), mode='mirror')
+for _ in range(iterations):
+    img_array = apply_blur_filter(img_array, filter_size=filter_size)
 
-# Normalize the filtered tree density values to a range of [0, 1]
-normalized_filtered_tree_density = normalize_data(filtered_green_channel)
+# 归一化处理后的图像数组
+img_array_normalized = (img_array - img_array.min()) / (img_array.max() - img_array.min())
 
-# Output a small part of the matrix for a quick look
-normalized_filtered_tree_density[:5, :5]
-output_path = 'normalized_tree_density.npy'
+# 保存归一化的numpy矩阵
+npy_output_path = 'normalized_tree_density.npy'
+np.save(npy_output_path, img_array_normalized)
 
-np.save(output_path, normalized_filtered_tree_density)
+# 将处理后的图像数组转换回图像
+output_image = Image.fromarray((img_array_normalized * 255).astype(np.uint8))
+
+# 保存处理后的图像
+output_image_path = 'check.png'
+output_image.save(output_image_path)
 
