@@ -31,13 +31,13 @@ for _ in range(iterations):
 img_array_normalized = (img_array - img_array.min()) / (img_array.max() - img_array.min())
 
 # 保存归一化的numpy矩阵
-npy_output_path = 'normalized_tree_density.npy'
+npy_output_path = 'dataset/normalized_tree_density.npy'
 np.save(npy_output_path, img_array_normalized)
 
 # 将处理后的图像数组转换回图像
 output_image = Image.fromarray((img_array_normalized * 255).astype(np.uint8))
 
 # 保存处理后的图像
-output_image_path = 'check.png'
+output_image_path = 'resultset/check.png'
 output_image.save(output_image_path)
 

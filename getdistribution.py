@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 from scipy.stats import norm
 
 # Load the normalized tree density data
-data_path = 'normalized_tree_density.npy'
+data_path = 'dataset/normalized_tree_density.npy'
 data = np.load(data_path)
 
 # Reshape the data for GaussianMixture model
@@ -34,5 +34,5 @@ plt.title('Probability Density Function of x')
 plt.xlabel('x values')
 plt.ylabel('Probability Density')
 plt.legend()
-path = 'distribution.png'
+path = 'resultset/distribution.png'
 plt.savefig(path)

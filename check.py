@@ -2,7 +2,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 
 # Load the numpy array from the file
-npy_path = 'normalized_tree_density.npy'
+npy_path = 'dataset/normalized_tree_density.npy'
 array = np.load(npy_path)
 
 # Create a histogram of the array values
@@ -13,6 +13,6 @@ plt.xlabel('Normalized Density Value')
 plt.ylabel('Frequency')
 
 # Save the histogram
-histogram_path = 'histogram.png'
+histogram_path = 'resultset/histogram.png'
 plt.savefig(histogram_path)
 
