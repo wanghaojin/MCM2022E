@@ -16,5 +16,3 @@ plt.ylabel('Frequency')
 histogram_path = 'histogram.png'
 plt.savefig(histogram_path)
 
-# Display the histogram
-plt.show()
