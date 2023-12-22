@@ -2,9 +2,10 @@ from sklearn.mixture import GaussianMixture
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.stats import norm
+import joblib
 
 # Load the normalized tree density data
-data_path = 'dataset/normalized_tree_density.npy'
+data_path = 'dataset/normalized_tree_density.npy'  # Use the correct path where the .npy file is located
 data = np.load(data_path)
 
 # Reshape the data for GaussianMixture model
@@ -34,5 +35,13 @@ plt.title('Probability Density Function of x')
 plt.xlabel('x values')
 plt.ylabel('Probability Density')
 plt.legend()
-path = 'resultset/distribution.png'
-plt.savefig(path)
+plt.grid(True)
+
+# Save the plot
+plot_path = 'resultset/distribution.png'  # Use the correct path to save the plot
+plt.savefig(plot_path)
+plt.close()
+
+# Save the GMM model
+gmm_model_path = 'dataset/gmm_density_model.pkl'  # Use the correct path to save the model
+joblib.dump(gmm, gmm_model_path)  # Save the 'gmm' object, not 'gmm_density'
