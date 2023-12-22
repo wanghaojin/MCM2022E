@@ -1,48 +1,38 @@
-import math
-from tree import Tree
-import deltaScal as ds
+import numpy as np
 import joblib
 from tqdm import tqdm
-import copy
+from tree import Tree
+import deltaScal as ds
 
 gmm_model_path = 'dataset/gmm_density_model.pkl'
 gmm_density = joblib.load(gmm_model_path)
 
-def deltas(map,x,y,width,height):
-    sum = 0
-    squares = 0
+def logistic_function(x, L=1, k=10, x0=0.5):
+    return L / (1 + np.exp(-k * (x - x0)))
+
+def deltas(map, x, y, width, height):
+    neighbors = []
     if y > 0:
-        squares += 1
-        sum += map[x][y].density
-    if x < height:
-        squares += 1
-        sum == map[x+1][y].density
+        neighbors.append(map[x][y - 1].density)
+    if x < height - 1:
+        neighbors.append(map[x + 1][y].density)
     if x > 0:
-        squares += 1
-        sum += map[x-1][y].density
-    if y < width:
-        squares += 1
-        sum += map[x][y+1].density
-    average = sum / squares
-    delta = ds.calculate_deltaS(map[x][y].size,average,gmm_density)
-    return delta
-def new_density(map,x,y,delta):
-    current = map[x][y].density
-    new = (1-current)*(delta ** 10) + current
-    return new
-def change_age(map,x,y):
-    age = map[x][y].age
-    return age+1
-def simulation(map,duration,width,height):
-    map_copy = copy.deepcopy(map)
+        neighbors.append(map[x - 1][y].density)
+    if y < width - 1:
+        neighbors.append(map[x][y + 1].density)
+    
+    average = np.mean(neighbors) if neighbors else 0
+    return ds.calculate_deltaS(map[x][y].size, average, gmm_density)
+
+
+def simulation(map, duration, width, height):
     for year in tqdm(range(duration)):
         for x in range(height):
             for y in range(width):
-                delta = deltas(map,x,y,width,height)
-                if delta < 0:
-                    delta = 0
-                map_copy[x][y].size = map[x][y].size * (1 + delta**15)
-                map_copy[x][y].density = new_density(map,x,y,delta)
-                map_copy[x][y].age = change_age(map,x,y)
-        map = map_copy
+                delta = deltas(map, x, y, width, height)
+                delta = max(0, delta)  
+                cals = logistic_function(delta)
+                map[x][y].size *= (1 + cals ** 15)
+                map[x][y].density = (1 - map[x][y].density) * (cals ** 10) + map[x][y].density
+                map[x][y].age += 1
     return map
